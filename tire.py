@@ -21,7 +21,7 @@ class Tire:
     def magic_formula(self, x, B, C, D, E):
         return D*np.sin(C*np.arctan(B*(1-E)*x + E*np.arctan(B*x)))
     
-    def get_force(self, Fz, SA, IA, Fx):
+    def get_force(self, Fz, SA, IA, SR):
         """ Calculates the forces acting on the tire. """
         # Fz is negative in this case
         muy = self.get_muy(Fz)
@@ -29,8 +29,13 @@ class Tire:
         cz = self.get_cz(Fz)
         SAbar = self.get_SAbar(muy, cz, SA)
         Fy = self.magic_formula(SAbar, self.By, self.Cy, muy*Fz, self.Ey)
-        multi = np.sqrt(1-(Fx/(Fz*mux))**2) * 0.65
-        Fy *= multi
+        Fx = self.magic_formula(SR, self.Bx, self.Cx, mux*Fz, self.Ex)
+        # Combined slip effects
+        phi = np.arctan(abs(Fy)*mux/abs(Fx)/muy)
+        multiY = np.sin(phi) * 0.65 # 0.65 is de-rating to account for smoothness of the test belt
+        multiX = np.cos(phi) * 0.65
+        Fy *= multiY
+        Fx *= multiX
         return (Fx, Fy)
     
     def get_moment(self, Fz, SA, IA, Fx):
@@ -88,6 +93,10 @@ class Hoosier10X7(Tire):
         self.By = 0.761
         self.Cy = 1.35
         self.Ey = 0.093
+        # Longitudinal force magic formula
+        self.Bx = 14.08078091
+        self.Cx = 1.47615282
+        self.Ex = 0.88199564
         # Tire parameters
         self.R = 0.216 #m
         # Useful information
