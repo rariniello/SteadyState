@@ -222,6 +222,8 @@ class Car:
         F_fl = tire.get_force(load[1], 180*SA[1]/np.pi, 0, 0)
         F_rr = tire.get_force(load[2], 180*SA[2]/np.pi, 0, Fx/2)
         F_rl = tire.get_force(load[3], 180*SA[3]/np.pi, 0, Fx/2)
+        F_rr[0] = Fx/2
+        F_rl[0] = Fx/2
         return F_fr, F_fl, F_rr, F_rl
     
     def get_tire_moments(self, Fx, load, SA):
@@ -295,6 +297,14 @@ class Car:
         Mz = self.calc_yaw_moment(FC)
         return Mz
     
+    def Mx_from_beta(self, beta, r, delta):
+        """ Find the yaw moment for a given delta, r, and beta. """
+        Ay, Fx, load, KA, SA, F, FE = self.Ay_Fx_from_angle(r, beta, delta,
+                                                            extra=True)
+        FC = self.get_chassis_tire_forces(F, KA, beta)
+        Mz = self.calc_yaw_moment(FC)
+        return Mz
+    
     def get_delta(self, r, beta, delta0=0.2):
         """ Calculate the steer angle needed for a given beta and radius. """
         try:
@@ -303,7 +313,17 @@ class Car:
             delta = float('nan')
         if abs(delta) > 0.5:
             delta = float('nan')
-        return delta
+        return 
+    
+    def get_beta(self, r, delta, beta0=0.2):
+        """ Calculate the steer angle needed for a given beta and radius. """
+        try:
+            beta = newton(self.Mx_from_beta, beta0, args=(r, delta))
+        except RuntimeError:
+            beta = float('nan')
+        if abs(delta) > 0.5:
+            beta = float('nan')
+        return beta
     
     # Output functions
     #--------------------------------------------------------------------------

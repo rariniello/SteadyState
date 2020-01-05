@@ -31,12 +31,17 @@ class Tire:
         Fy = self.magic_formula(SAbar, self.By, self.Cy, muy*Fz, self.Ey)
         Fx = self.magic_formula(SR, self.Bx, self.Cx, mux*Fz, self.Ex)
         # Combined slip effects
-        phi = np.arctan(abs(Fy)*mux/abs(Fx)/muy)
-        multiY = np.sin(phi) * 0.65 # 0.65 is de-rating to account for smoothness of the test belt
-        multiX = np.cos(phi) * 0.65
-        Fy *= multiY
-        Fx *= multiX
-        return (Fx, Fy)
+        if Fx == 0.0:
+            phi = np.pi/2
+        else:
+            phi = np.arctan(abs(Fy)*mux/abs(Fx)/muy)
+        multiY = abs(np.sin(phi)) * 0.65 # 0.65 is de-rating to account for smoothness of the test belt
+        multiX = abs(np.cos(phi)) * 0.65
+        multi = np.sqrt(1-(SR/(Fz*mux))**2) * 0.65
+        Fy *= multi
+        #Fy *= multiY
+        #Fx *= multiX
+        return [Fx, Fy]
     
     def get_moment(self, Fz, SA, IA, Fx):
         """ Calculates the moments acting on the tire. """
@@ -48,7 +53,7 @@ class Tire:
         multi = Tz*muy*Fz * 0.65
         Mz *= multi
         Mx = 0.0
-        return (Mx, Mz)
+        return [Mx, Mz]
     
     def get_muy(self, Fz):
         """ Calculates the lateral coefficient of friction. """
