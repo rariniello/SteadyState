@@ -313,7 +313,7 @@ class Car:
             delta = float('nan')
         if abs(delta) > 0.5:
             delta = float('nan')
-        return 
+        return delta
     
     def get_beta(self, r, delta, beta0=0.2):
         """ Calculate the steer angle needed for a given beta and radius. """
